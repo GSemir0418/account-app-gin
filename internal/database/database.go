@@ -39,6 +39,9 @@ func ConnectDB() {
 func Migrate() {
 	if DB != nil {
 		// 迁移数据库
-		DB.AutoMigrate(&Item{})
+		err := DB.AutoMigrate(&User{}, &Item{})
+		if err != nil {
+			log.Fatal("Fail to migrate database!", err)
+		}
 	}
 }
