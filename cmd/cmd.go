@@ -2,10 +2,10 @@ package cmd
 
 import (
 	"account-app-gin/internal/database"
+	"account-app-gin/router"
 	"log"
 	"os/exec"
 
-	"github.com/gin-gonic/gin"
 	"github.com/spf13/cobra"
 )
 
@@ -16,19 +16,8 @@ func Run() {
 	srvCmd := &cobra.Command{
 		Use: "server",
 		Run: func(cmd *cobra.Command, args []string) {
-			r := gin.Default()
-
-			r.GET("/", func(c *gin.Context) {
-				c.JSON(200, gin.H{
-					"message": "Hello, World!",
-				})
-			})
-			r.GET("/ping", func(c *gin.Context) {
-				c.JSON(200, gin.H{
-					"message": "pong",
-				})
-			})
-			r.Run()
+			r := router.New()
+			r.Run(":8080")
 		},
 	}
 	dbCmd := &cobra.Command{
