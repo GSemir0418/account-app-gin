@@ -14,3 +14,17 @@ go get -u github.com/spf13/cobra@latest
 
 lsof -i :8080
 kill -9 54603
+
+go test ./...
+
+refactor router
+
+init controller interface
+
+setup test
+
+加载环境变量逻辑抽离 for test
+
+TDD item create
+
+抽离清空数据表的逻辑 for test
