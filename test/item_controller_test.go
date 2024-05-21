@@ -21,7 +21,7 @@ func TestItemCreate(t *testing.T) {
 	ic.RegisterRoutes(r.Group("/api"))
 	// 初始化 w
 	w := httptest.NewRecorder()
-	// 创建一个 user, 默认一定成功
+	// 创建一个 user
 	user := &database.User{
 		Email: "1@qq.com",
 	}
@@ -29,11 +29,22 @@ func TestItemCreate(t *testing.T) {
 	if tx.Error != nil {
 		t.Fatal("Create user failed:", tx.Error)
 	}
+	// 创建一个 tag
+	tag := &database.Tag{
+		UserID: user.ID,
+		Sign:   "⌚️",
+		Name:   "电子产品",
+		Kind:   "expenses",
+	}
+	tx = database.DB.Create(tag)
+	if tx.Error != nil {
+		t.Fatal("Create tag failed:", tx.Error)
+	}
 
 	// 创建 item
 	item := &database.Item{
 		Amount:     100,
-		TagIDs:     "1,2,3",
+		Tags:       []*database.Tag{tag},
 		UserID:     user.ID,
 		Kind:       "in_come",
 		HappenedAt: time.Now(),
@@ -67,7 +78,7 @@ func TestItemPaged(t *testing.T) {
 		"/api/v1/items?page=3&page_size=5",
 		nil,
 	)
-	// 创建一个 user, 默认一定成功
+	// 创建一个 user
 	user := &database.User{
 		Email: "1@qq.com",
 	}
@@ -75,13 +86,25 @@ func TestItemPaged(t *testing.T) {
 	if tx.Error != nil {
 		t.Fatal("Create user failed:", tx.Error)
 	}
+	// 创建一个 tag
+	tag := &database.Tag{
+		UserID: user.ID,
+		Sign:   "⌚️",
+		Name:   "电子产品",
+		Kind:   "expenses",
+	}
+	tx = database.DB.Create(tag)
+	if tx.Error != nil {
+		t.Fatal("Create tag failed:", tx.Error)
+	}
+
 	// 创建 13 个 item
 	for i := 0; i < int(13); i++ {
 		item := &database.Item{
 			UserID:     user.ID,
 			Amount:     10000,
 			Kind:       "expenses",
-			TagIDs:     "1,2,3",
+			Tags:       []*database.Tag{tag},
 			HappenedAt: time.Now(),
 		}
 		if tx = database.DB.Create(item); tx.Error != nil {
