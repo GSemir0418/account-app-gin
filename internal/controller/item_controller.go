@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"account-app-gin/internal/api"
 	"account-app-gin/internal/database"
 	"errors"
 	"net/http"
@@ -85,18 +86,9 @@ func (ctrl *ItemController) GetPaged(c *gin.Context) {
 	}
 
 	// 响应，包括分页的数据和总数
-	type Pager struct {
-		Total    int64 `json:"total"`
-		Page     int64 `json:"page"`
-		PageSize int64 `json:"page_size"`
-	}
-	type GetPagedResponse struct {
-		Resources []database.Item `json:"resources"`
-		Pager     Pager
-	}
-	c.JSON(http.StatusOK, GetPagedResponse{
+	c.JSON(http.StatusOK, api.GetPagedResponse{
 		Resources: items,
-		Pager: Pager{
+		Pager: api.Pager{
 			Total:    total,
 			Page:     int64(page),
 			PageSize: int64(pageSize),

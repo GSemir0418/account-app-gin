@@ -1,6 +1,7 @@
 package test
 
 import (
+	"account-app-gin/internal/api"
 	"account-app-gin/internal/controller"
 	"account-app-gin/internal/database"
 	"encoding/json"
@@ -91,17 +92,8 @@ func TestItemPaged(t *testing.T) {
 	// 发起请求
 	r.ServeHTTP(w, req)
 	assert.Equal(t, 200, w.Code)
-	// var resBody api.GetPagedItemsResponse
-	type Pager struct {
-		Total    int64 `json:"total"`
-		Page     int64 `json:"page"`
-		PageSize int64 `json:"page_size"`
-	}
-	type GetPagedResponse struct {
-		Resources []database.Item `json:"resources"`
-		Pager     Pager
-	}
-	var response GetPagedResponse
+
+	var response api.GetPagedResponse
 	if err := json.Unmarshal(w.Body.Bytes(), &response); err != nil {
 		t.Fatalf("json.Unmarshal fail %v", err)
 	}
