@@ -4,6 +4,7 @@ import (
 	"account-app-gin/internal/api"
 	"account-app-gin/internal/database"
 	"errors"
+	"log"
 	"net/http"
 	"strconv"
 
@@ -20,7 +21,8 @@ func (ctrl *ItemController) Get(c *gin.Context) {
 func (ctrl *ItemController) Create(c *gin.Context) {
 	var item database.Item
 	if err := c.BindJSON(&item); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		log.Print(err)
+		c.JSON(http.StatusUnprocessableEntity, api.Error{Error: "Invalid request payload"})
 		return
 	}
 
@@ -37,7 +39,8 @@ func (ctrl *ItemController) Create(c *gin.Context) {
 	}
 
 	if result := database.DB.Create(&item); result.Error != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": result.Error.Error()})
+		log.Print(result.Error.Error())
+		c.JSON(http.StatusInternalServerError, api.Error{Error: "Failed to create item"})
 		return
 	}
 
@@ -75,13 +78,15 @@ func (ctrl *ItemController) GetPaged(c *gin.Context) {
 
 	// 首先得到总数，用于分页信息
 	if err := database.DB.Model(&database.Item{}).Count(&total).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "get model total failed"})
+		c.JSON(http.StatusInternalServerError, api.Error{Error: "Get total count failed"})
+		log.Print(err)
 		return
 	}
 
 	// 查询分页的数据
 	if err := database.DB.Offset(offset).Limit(pageSize).Find(&items).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err})
+		c.JSON(http.StatusInternalServerError, api.Error{Error: "Get paged data failed"})
+		log.Print(err)
 		return
 	}
 

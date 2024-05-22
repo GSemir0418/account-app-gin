@@ -1,8 +1,10 @@
 package controller
 
 import (
+	"account-app-gin/internal/api"
 	"account-app-gin/internal/database"
 	"errors"
+	"log"
 	"net/http"
 	"strconv"
 
@@ -19,7 +21,8 @@ func (ctrl *TagController) Get(c *gin.Context) {
 func (ctrl *TagController) Create(c *gin.Context) {
 	var tag database.Tag
 	if err := c.BindJSON(&tag); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusUnprocessableEntity, api.Error{Error: "Invalid input"})
+		log.Print(err)
 		return
 	}
 
@@ -36,7 +39,8 @@ func (ctrl *TagController) Create(c *gin.Context) {
 	}
 
 	if result := database.DB.Create(&tag); result.Error != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": result.Error.Error()})
+		c.JSON(http.StatusInternalServerError, api.Error{Error: "Could not create tag"})
+		log.Print(result.Error.Error())
 		return
 	}
 
@@ -49,7 +53,8 @@ func (ctrl *TagController) Update(c *gin.Context) {
 	id, _ := strconv.Atoi(c.Param("id"))
 
 	if err := database.DB.First(&tag, id).Error; err != nil {
-		c.JSON(404, gin.H{"error": "Tag not found"})
+		log.Print(err)
+		c.JSON(http.StatusUnprocessableEntity, api.Error{Error: "Tag not found"})
 		return
 	}
 
@@ -63,7 +68,8 @@ func (ctrl *TagController) Update(c *gin.Context) {
 	}
 
 	if err := c.ShouldBindJSON(&input); err != nil {
-		c.JSON(400, gin.H{"error": "Bad request"})
+		c.JSON(http.StatusUnprocessableEntity, api.Error{Error: "Invalid input"})
+		log.Print(err)
 		return
 	}
 
@@ -82,12 +88,13 @@ func (ctrl *TagController) Update(c *gin.Context) {
 	// 改用 Update
 	result := database.DB.Model(&tag).Updates(tag)
 	if result.Error != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": result.Error.Error()})
+		c.JSON(http.StatusInternalServerError, api.Error{Error: "Could not update tag"})
+		log.Print(result.Error.Error())
 		return
 	}
 
 	// 返回更新后的完整数据
-	c.JSON(200, tag)
+	c.JSON(http.StatusOK, tag)
 }
 
 func (ctrl *TagController) GetBanlance(c *gin.Context) {
