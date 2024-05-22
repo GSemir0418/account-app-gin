@@ -60,7 +60,7 @@ func (ctrl *ItemController) Destory(c *gin.Context) {
 	panic("not implemented") // TODO: Implement
 }
 func (ctrl *ItemController) GetPaged(c *gin.Context) {
-	// 拿到请求参数
+	// 拿到 url 查询参数
 	// page := c.Request.URL.Query().Get("page")
 	// page := c.DefaultQuery("page", "1")
 	// pageSize := c.Request.URL.Query().Get("page_size")

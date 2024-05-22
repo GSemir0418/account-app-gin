@@ -115,10 +115,17 @@ CREATE TABLE `item_tags` (
 		Kind:       "in_come",
 		HappenedAt: time.Now(),
 	} 报错：cannot use tag (variable of type *database.Tag) as database.Tag value in array or slice literalcompilerIncompatibleAssign
-  
+
 通常，在处理数据库和关联关系时，推荐使用指针类型作为切片的元素类型，因为这可以更好地与ORM工作，并方便处理没有值（nil）的情形。
 推荐将item中的Tags定义为指向Tag的指针的切片，
 
 log 测试中的 log 和正常接口日志的log
+
+整理状态码 整理接口出入参类型
+
+更新接口
+使用指针定义更新接口入参。保证灵活性，然后再赋值给 tag 对象
+使用 model.updates 而不是 save
+在模拟请求时, 使用 model 作为类型的话会自动补充空值，所以要使用更通用的 map[string]string
 
 接口文档

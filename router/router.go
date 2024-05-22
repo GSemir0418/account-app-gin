@@ -10,6 +10,7 @@ import (
 func loadControllers() []controller.Controller {
 	return []controller.Controller{
 		&controller.ItemController{},
+		&controller.TagController{},
 	}
 }
 
