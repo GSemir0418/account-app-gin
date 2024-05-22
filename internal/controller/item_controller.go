@@ -19,8 +19,8 @@ func (ctrl *ItemController) Get(c *gin.Context) {
 }
 
 func (ctrl *ItemController) Create(c *gin.Context) {
-	var item database.Item
-	if err := c.BindJSON(&item); err != nil {
+	var body api.CreateItemRequest
+	if err := c.BindJSON(&body); err != nil {
 		log.Print(err)
 		c.JSON(http.StatusUnprocessableEntity, api.Error{Error: "Invalid request payload"})
 		return
@@ -28,7 +28,7 @@ func (ctrl *ItemController) Create(c *gin.Context) {
 
 	// 检查 UserID 是否指向一个存在的 User 记录
 	var user database.User
-	if err := database.DB.First(&user, item.UserID).Error; err != nil {
+	if err := database.DB.First(&user, body.UserID).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "User not found"})
 			return
@@ -37,6 +37,27 @@ func (ctrl *ItemController) Create(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
+
+	// 查询 tag id 是否有效
+	tagIds := body.TagIDs
+	var tags []*database.Tag
+	for _, tagId := range tagIds {
+		var tag database.Tag
+		result := database.DB.First(&tag, tagId)
+		if result.Error != nil {
+			c.JSON(http.StatusUnprocessableEntity, api.Error{Error: "Can not find tag"})
+			log.Print(result.Error.Error())
+			return
+		}
+		tags = append(tags, &tag)
+	}
+	// 将 tagIds 放入 item 中
+	var item database.Item
+	item.UserID = user.ID
+	item.Tags = tags
+	item.Amount = body.Amount
+	item.HappenedAt = body.HappenedAt
+	item.Kind = body.Kind
 
 	if result := database.DB.Create(&item); result.Error != nil {
 		log.Print(result.Error.Error())

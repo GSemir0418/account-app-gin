@@ -42,18 +42,19 @@ func TestItemCreate(t *testing.T) {
 	}
 
 	// 创建 item
-	item := &database.Item{
-		Amount:     100,
-		Tags:       []*database.Tag{tag},
+	body := &api.CreateItemRequest{
+		Amount: 1000000,
+		TagIDs: []uint{tag.ID},
+		// Tags:       []*database.Tag{tag},
 		UserID:     user.ID,
 		Kind:       "in_come",
 		HappenedAt: time.Now(),
 	}
-	itemJson, _ := json.Marshal(item)
+	bodyJson, _ := json.Marshal(body)
 	req, _ := http.NewRequest(
 		"POST",
 		"/api/v1/items",
-		strings.NewReader(string(itemJson)),
+		strings.NewReader(string(bodyJson)),
 	)
 	// 发起请求
 	r.ServeHTTP(w, req)
@@ -62,7 +63,8 @@ func TestItemCreate(t *testing.T) {
 	assert.Equal(t, 200, w.Code)
 	err := json.Unmarshal(w.Body.Bytes(), &response)
 	assert.Nil(t, err)
-	assert.Equal(t, response["UserID"], float64(user.ID))
+	assert.Equal(t, response["userId"], float64(user.ID))
+	assert.Equal(t, response["amount"], float64(1000000))
 }
 
 func TestItemPaged(t *testing.T) {
