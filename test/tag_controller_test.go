@@ -1,6 +1,7 @@
 package test
 
 import (
+	"account-app-gin/internal/api"
 	"account-app-gin/internal/controller"
 	"account-app-gin/internal/database"
 	"encoding/json"
@@ -29,17 +30,17 @@ func TestTagCreate(t *testing.T) {
 		t.Fatal("Create user failed:", tx.Error)
 	}
 	// 创建一个 tag
-	tag := &database.Tag{
+	body := &api.CreateTagRequest{
 		UserID: user.ID,
 		Sign:   "⌚️",
 		Name:   "电子产品",
 		Kind:   "expenses",
 	}
-	tagJson, _ := json.Marshal(tag)
+	bodyJson, _ := json.Marshal(body)
 	req, _ := http.NewRequest(
 		"POST",
 		"/api/v1/tags",
-		strings.NewReader(string(tagJson)),
+		strings.NewReader(string(bodyJson)),
 	)
 	// 发起请求
 	r.ServeHTTP(w, req)
@@ -48,7 +49,7 @@ func TestTagCreate(t *testing.T) {
 	assert.Equal(t, 200, w.Code)
 	err := json.Unmarshal(w.Body.Bytes(), &response)
 	assert.Nil(t, err)
-	assert.Equal(t, response["UserID"], float64(user.ID))
+	assert.Equal(t, response["userId"], float64(user.ID))
 }
 
 func TestTagUpdate(t *testing.T) {
@@ -78,16 +79,16 @@ func TestTagUpdate(t *testing.T) {
 	}
 
 	// 更新后的 tag
-	newTag := map[string]string{
-		"sign": "🏮",
-		"name": "新名称",
+	body := api.UpdateTagRequest{
+		Sign: strPtr("🏮"),
+		Name: strPtr("新名称"),
 	}
 
-	newTagJson, _ := json.Marshal(newTag)
+	bodyJson, _ := json.Marshal(body)
 	req, _ := http.NewRequest(
 		"PATCH",
 		fmt.Sprintf("/api/v1/tags/%d", tag.ID),
-		strings.NewReader(string(newTagJson)),
+		strings.NewReader(string(bodyJson)),
 	)
 	// 发起请求
 	r.ServeHTTP(w, req)
@@ -98,9 +99,10 @@ func TestTagUpdate(t *testing.T) {
 	if err != nil {
 		t.Fatalf("json.Unmarshal fail %v", err)
 	}
-	assert.Equal(t, response["UserID"], float64(user.ID))
-	assert.Equal(t, response["Sign"], newTag["sign"])
-	assert.Equal(t, response["Kind"], tag.Kind)
+	assert.Equal(t, response["userId"], float64(user.ID))
+	assert.Equal(t, response["sign"], *body.Sign)
+	assert.Equal(t, response["name"], *body.Name)
+	assert.Equal(t, response["kind"], tag.Kind)
 }
 
 // func TestItemPaged(t *testing.T) {

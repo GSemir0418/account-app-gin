@@ -21,7 +21,7 @@ func (ctrl *TagController) Get(c *gin.Context) {
 func (ctrl *TagController) Create(c *gin.Context) {
 	var tag database.Tag
 	if err := c.BindJSON(&tag); err != nil {
-		c.JSON(http.StatusUnprocessableEntity, api.Error{Error: "Invalid input"})
+		c.JSON(http.StatusUnprocessableEntity, api.Error{Error: "Invalid request payload"})
 		log.Print(err)
 		return
 	}
@@ -61,26 +61,22 @@ func (ctrl *TagController) Update(c *gin.Context) {
 	tag.ID = uint(id)
 	// 更新的数据可以传一个或多个
 	// 为了保证灵活性，这里使用指针单独定义接口入参类型
-	var input struct {
-		Name *string `json:"name"`
-		Sign *string `json:"sign"`
-		Kind *string `json:"kind"`
-	}
+	var body api.UpdateTagRequest
 
-	if err := c.ShouldBindJSON(&input); err != nil {
-		c.JSON(http.StatusUnprocessableEntity, api.Error{Error: "Invalid input"})
+	if err := c.ShouldBindJSON(&body); err != nil {
+		c.JSON(http.StatusUnprocessableEntity, api.Error{Error: "Invalid request payload"})
 		log.Print(err)
 		return
 	}
 
-	if input.Name != nil {
-		tag.Name = *input.Name
+	if body.Name != nil {
+		tag.Name = *body.Name
 	}
-	if input.Sign != nil {
-		tag.Sign = *input.Sign
+	if body.Sign != nil {
+		tag.Sign = *body.Sign
 	}
-	if input.Kind != nil {
-		tag.Kind = *input.Kind
+	if body.Kind != nil {
+		tag.Kind = *body.Kind
 	}
 
 	// Save 是一个组合函数。 如果保存值不包含主键，它将执行 Create，否则它将执行 Update (包含所有字段)。

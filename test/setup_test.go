@@ -28,3 +28,7 @@ func setUpTestCase(t *testing.T) {
 	// 使用 DELETE 性能很差，所以这里使用更激进的策略，先关闭外键约束检查，清空后再恢复
 	database.TruncateTables(t, []string{"users", "items", "tags", "item_tags"})
 }
+
+func strPtr(s string) *string {
+	return &s
+}
