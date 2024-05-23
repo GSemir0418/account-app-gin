@@ -229,3 +229,46 @@ func TestDeleteTag(t *testing.T) {
 	assert.Equal(t, int64(1), itemCount)
 	assert.Equal(t, int64(0), itemTagsCount)
 }
+
+func TestGetAllTag(t *testing.T) {
+	setUpTestCase(t)
+	// 注册路由
+	tc := controller.TagController{}
+	tc.RegisterRoutes(r.Group("/api"))
+	// 创建一个用户
+	user := &database.User{
+		Email: "1@qq.com",
+	}
+	tx := database.DB.Create(user)
+	if tx.Error != nil {
+		t.Fatal("Create user failed:", tx.Error)
+	}
+	// 创建 5 条数据
+	for i := 0; i < 5; i++ {
+		tag := &database.Tag{
+			Sign:   "⌚️",
+			Name:   fmt.Sprintf("电子产品%d", i),
+			Kind:   "expenses",
+			UserID: user.ID,
+		}
+		database.DB.Create(tag)
+	}
+	// 初始化 w
+	w := httptest.NewRecorder()
+	// 发起请求
+	req, _ := http.NewRequest(
+		"GET",
+		"/api/v1/tags",
+		nil,
+	)
+	r.ServeHTTP(w, req)
+	// 断言
+	assert.Equal(t, 200, w.Code)
+	// 解析响应
+	var response api.GetAllTagResponse
+	if err := json.Unmarshal(w.Body.Bytes(), &response); err != nil {
+		t.Fatalf("json.Unmarshal fail %v", err)
+	}
+	// 先用断言 后面会补充类型
+	assert.Equal(t, 5, len(response.Resources))
+}

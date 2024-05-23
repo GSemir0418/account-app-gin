@@ -181,11 +181,26 @@ func (ctrl *TagController) GetSummary(c *gin.Context) {
 	panic("not implemented") // TODO: Implement
 }
 
+func (ctrl *TagController) GetAll(c *gin.Context) {
+	// 获取全部 tags 数据
+	var tags []database.Tag
+
+	if err := database.DB.Find(&tags).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, api.Error{Error: "Failed to get all tags"})
+		log.Print(err.Error())
+		return
+	}
+
+	c.JSON(http.StatusOK, api.GetAllTagResponse{
+		Resources: tags,
+	})
+}
+
 func (ctrl *TagController) RegisterRoutes(rg *gin.RouterGroup) {
 	v1 := rg.Group("/v1")
 	v1.POST("/tags", ctrl.Create)
 	v1.PATCH("/tags/:id", ctrl.Update)
 	v1.DELETE("/tags/:id", ctrl.Destory)
-	v1.GET("/tags", ctrl.GetPaged)
+	v1.GET("/tags", ctrl.GetAll)
 	v1.GET("/tags/:id", ctrl.Get)
 }
