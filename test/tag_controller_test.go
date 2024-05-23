@@ -10,6 +10,7 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -163,3 +164,68 @@ func TestTagUpdate(t *testing.T) {
 // 	// 先用断言 后面会补充类型
 // 	assert.Equal(t, 3, len(response.Resources))
 // }
+
+func TestDeleteTag(t *testing.T) {
+	setUpTestCase(t)
+	// 注册路由
+	tc := controller.TagController{}
+	tc.RegisterRoutes(r.Group("/api"))
+	// 初始化 w
+	w := httptest.NewRecorder()
+	// 创建一个 user
+	user := &database.User{
+		Email: "1@qq.com",
+	}
+	tx := database.DB.Create(user)
+	if tx.Error != nil {
+		t.Fatal("Create user failed:", tx.Error)
+	}
+	// 创建一个 tag
+	tag := &database.Tag{
+		UserID: user.ID,
+		Sign:   "⌚️",
+		Name:   "电子产品",
+		Kind:   "expenses",
+	}
+	tx = database.DB.Create(tag)
+	if tx.Error != nil {
+		t.Fatal("Create tag failed:", tx.Error)
+	}
+	// 创建一个 item
+	item := &database.Item{
+		Amount:     1000000,
+		Tags:       []*database.Tag{tag},
+		UserID:     user.ID,
+		Kind:       "in_come",
+		HappenedAt: time.Now(),
+	}
+	tx = database.DB.Create(item)
+	if tx.Error != nil {
+		t.Fatal("Create item failed:", tx.Error)
+	}
+	// 测试此时三个表分别只有 1 条数据
+	var tagCount int64
+	database.DB.Model(&database.Tag{}).Count(&tagCount)
+	var itemCount int64
+	database.DB.Model(&database.Item{}).Count(&itemCount)
+	var itemTagsCount int64
+	database.DB.Raw("SELECT COUNT(*) FROM item_tags").Scan(&itemTagsCount)
+	assert.Equal(t, int64(1), tagCount)
+	assert.Equal(t, int64(1), itemCount)
+	assert.Equal(t, int64(1), itemTagsCount)
+	// 构造请求
+	req, _ := http.NewRequest(
+		"DELETE",
+		fmt.Sprintf("/api/v1/tags/%d", tag.ID),
+		nil,
+	)
+	r.ServeHTTP(w, req)
+	assert.Equal(t, 200, w.Code)
+	database.DB.Model(&database.Tag{}).Count(&tagCount)
+	database.DB.Model(&database.Item{}).Count(&itemCount)
+	database.DB.Raw("SELECT COUNT(*) FROM item_tags").Scan(&itemTagsCount)
+	// 断言删除成功，并且关联表的数据也会删除
+	assert.Equal(t, int64(0), tagCount)
+	assert.Equal(t, int64(1), itemCount)
+	assert.Equal(t, int64(0), itemTagsCount)
+}

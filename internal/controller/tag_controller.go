@@ -102,7 +102,43 @@ func (ctrl *TagController) Find(c *gin.Context) {
 }
 
 func (ctrl *TagController) Destory(c *gin.Context) {
-	panic("not implemented") // TODO: Implement
+	// 删除 tag，首先要删除关联表中的记录，再删除 tag 本身
+	// 所以使用事务来保证删除操作的原子性
+	// 获取 url 路径参数
+	id, _ := strconv.Atoi(c.Param("id"))
+
+	// 开始事务
+	tx := database.DB.Begin()
+	if tx.Error != nil {
+		c.JSON(http.StatusInternalServerError, api.Error{Error: "Failed to start transaction"})
+		log.Print(tx.Error.Error())
+		return
+	}
+
+	// 步骤1: 从多对多关联表中删除
+	if err := tx.Exec("DELETE FROM item_tags WHERE tag_id = ?", id).Error; err != nil {
+		tx.Rollback() // 回滚事务
+		c.JSON(http.StatusUnprocessableEntity, api.Error{Error: "Invalid request params"})
+		log.Print(err)
+		return
+	}
+
+	// 步骤2: 删除标签本身
+	if err := tx.Delete(&database.Tag{}, id).Error; err != nil {
+		tx.Rollback() // 回滚事务
+		c.JSON(http.StatusUnprocessableEntity, api.Error{Error: "Invalid request params"})
+		log.Print(err)
+		return
+	}
+
+	// 提交事务
+	if err := tx.Commit().Error; err != nil {
+		c.JSON(http.StatusInternalServerError, api.Error{Error: "Failed to commit transaction"})
+		log.Print(err)
+		return
+	}
+
+	c.Status(http.StatusOK)
 }
 func (ctrl *TagController) GetPaged(c *gin.Context) {
 	// 拿到请求参数
