@@ -19,8 +19,8 @@ func (ctrl *TagController) Get(c *gin.Context) {
 }
 
 func (ctrl *TagController) Create(c *gin.Context) {
-	var tag database.Tag
-	if err := c.BindJSON(&tag); err != nil {
+	var body api.CreateTagRequest
+	if err := c.BindJSON(&body); err != nil {
 		c.JSON(http.StatusUnprocessableEntity, api.Error{Error: "Invalid request payload"})
 		log.Print(err)
 		return
@@ -28,7 +28,7 @@ func (ctrl *TagController) Create(c *gin.Context) {
 
 	// 检查 UserID 是否指向一个存在的 User 记录 后面有登录中间件就不用了
 	var user database.User
-	if err := database.DB.First(&user, tag.UserID).Error; err != nil {
+	if err := database.DB.First(&user, body.UserID).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "User not found"})
 			return
@@ -37,6 +37,13 @@ func (ctrl *TagController) Create(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
+
+	// 创建 tag
+	// 将 tagIds 放入 item 中
+	var tag database.Tag
+	tag.UserID = user.ID
+	tag.Sign = body.Sign
+	tag.Name = body.Name
 
 	if result := database.DB.Create(&tag); result.Error != nil {
 		c.JSON(http.StatusInternalServerError, api.Error{Error: "Could not create tag"})
