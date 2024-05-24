@@ -51,7 +51,7 @@ func (ctrl *ItemController) Create(c *gin.Context) {
 		}
 		tags = append(tags, &tag)
 	}
-	// 将 tagIds 放入 item 中
+	// 将 tags 放入 item 中
 	var item database.Item
 	item.UserID = user.ID
 	item.Tags = tags
@@ -105,7 +105,7 @@ func (ctrl *ItemController) GetPaged(c *gin.Context) {
 	}
 
 	// 查询分页的数据
-	if err := database.DB.Offset(offset).Limit(pageSize).Find(&items).Error; err != nil {
+	if err := database.DB.Preload("Tags").Offset(offset).Limit(pageSize).Find(&items).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, api.Error{Error: "Get paged data failed"})
 		log.Print(err)
 		return
