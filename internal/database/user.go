@@ -13,6 +13,7 @@ type User struct {
 	DeletedAt gorm.DeletedAt `gorm:"index" json:"deletedAt"`
 	// gorm.Model                // gorm.Model includes fields ID, CreatedAt, UpdatedAt, DeletedAt
 	Email string `gorm:"size:255;not null;unique" json:"email"`
+
 	Tags  []*Tag
 	Items []*Item
 }

@@ -11,8 +11,9 @@ type GetPagedResponse struct {
 }
 
 type CreateItemRequest struct {
-	UserID     uint      `json:"userId"`
-	TagIDs     []uint    `json:"tagIds"`
+	UserID uint `json:"userId"`
+	TagID  uint `json:"tagId"`
+
 	Amount     int       `json:"amount"`
 	Kind       string    `json:"kind"`
 	HappenedAt time.Time `json:"happenedAt"`

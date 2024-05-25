@@ -122,13 +122,13 @@ func (ctrl *TagController) Destory(c *gin.Context) {
 		return
 	}
 
-	// 步骤1: 从多对多关联表中删除
-	if err := tx.Exec("DELETE FROM item_tags WHERE tag_id = ?", id).Error; err != nil {
-		tx.Rollback() // 回滚事务
-		c.JSON(http.StatusUnprocessableEntity, api.Error{Error: "Invalid request params"})
-		log.Print(err)
-		return
-	}
+	// // 步骤1: 从多对多关联表中删除
+	// if err := tx.Exec("DELETE FROM item_tags WHERE tag_id = ?", id).Error; err != nil {
+	// 	tx.Rollback() // 回滚事务
+	// 	c.JSON(http.StatusUnprocessableEntity, api.Error{Error: "Invalid request params"})
+	// 	log.Print(err)
+	// 	return
+	// }
 
 	// 步骤2: 删除标签本身
 	if err := tx.Delete(&database.Tag{}, id).Error; err != nil {

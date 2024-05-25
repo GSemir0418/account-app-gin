@@ -44,7 +44,7 @@ func TestItemCreate(t *testing.T) {
 	// 创建 item
 	body := &api.CreateItemRequest{
 		Amount:     1000000,
-		TagIDs:     []uint{tag.ID},
+		TagID:      tag.ID,
 		UserID:     user.ID,
 		Kind:       "in_come",
 		HappenedAt: time.Now(),
@@ -64,7 +64,7 @@ func TestItemCreate(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, response["userId"], float64(user.ID))
 	assert.Equal(t, response["amount"], float64(1000000))
-	assert.Equal(t, response["tags"].([]interface{})[0].(map[string]interface{})["id"], float64(tag.ID))
+	assert.Equal(t, response["tagId"], float64(tag.ID))
 }
 
 func TestItemPaged(t *testing.T) {
@@ -106,7 +106,7 @@ func TestItemPaged(t *testing.T) {
 			UserID:     user.ID,
 			Amount:     10000,
 			Kind:       "expenses",
-			Tags:       []*database.Tag{tag},
+			TagID:      tag.ID,
 			HappenedAt: time.Now(),
 		}
 		if tx = database.DB.Create(item); tx.Error != nil {
@@ -125,5 +125,5 @@ func TestItemPaged(t *testing.T) {
 	// 先用断言 后面会补充类型
 	assert.Equal(t, 3, len(response.Resources))
 	// 断言 response.Resources 的第一项的 tags 数组的第一项的 id 为 tag.ID
-	assert.Equal(t, uint(tag.ID), response.Resources[0].Tags[0].ID)
+	assert.Equal(t, uint(tag.ID), response.Resources[0].Tag.ID)
 }

@@ -39,22 +39,18 @@ func (ctrl *ItemController) Create(c *gin.Context) {
 	}
 
 	// 查询 tag id 是否有效
-	tagIds := body.TagIDs
-	var tags []*database.Tag
-	for _, tagId := range tagIds {
-		var tag database.Tag
-		result := database.DB.First(&tag, tagId)
-		if result.Error != nil {
-			c.JSON(http.StatusUnprocessableEntity, api.Error{Error: "Can not find tag"})
-			log.Print(result.Error.Error())
-			return
-		}
-		tags = append(tags, &tag)
+	tagId := body.TagID
+	var tag *database.Tag
+	result := database.DB.First(&tag, tagId)
+	if result.Error != nil {
+		c.JSON(http.StatusUnprocessableEntity, api.Error{Error: "Can not find tag"})
+		log.Print(result.Error.Error())
+		return
 	}
 	// 将 tags 放入 item 中
 	var item database.Item
 	item.UserID = user.ID
-	item.Tags = tags
+	item.TagID = tagId
 	item.Amount = body.Amount
 	item.HappenedAt = body.HappenedAt
 	item.Kind = body.Kind
@@ -105,7 +101,9 @@ func (ctrl *ItemController) GetPaged(c *gin.Context) {
 	}
 
 	// 查询分页的数据
-	if err := database.DB.Preload("Tags").Offset(offset).Limit(pageSize).Find(&items).Error; err != nil {
+	// 通过调用 Preload("Tag")，GORM 将在查询 Item 数据时自动执行额外的查询来加载每个 Item 的 Tag 数据，并将它们填充到返回的 Item 结构体的 Tag 字段。
+	// 请注意 "Tag" 应该是你在 Item 结构体中定义的关联字段名称；如果你的字段名称不是 Tag，请用实际的字段名称替换它。
+	if err := database.DB.Preload("Tag").Offset(offset).Limit(pageSize).Find(&items).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, api.Error{Error: "Get paged data failed"})
 		log.Print(err)
 		return

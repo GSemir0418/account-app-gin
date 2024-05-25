@@ -194,7 +194,7 @@ func TestDeleteTag(t *testing.T) {
 	// 创建一个 item
 	item := &database.Item{
 		Amount:     1000000,
-		Tags:       []*database.Tag{tag},
+		TagID:      tag.ID,
 		UserID:     user.ID,
 		Kind:       "in_come",
 		HappenedAt: time.Now(),
@@ -203,16 +203,13 @@ func TestDeleteTag(t *testing.T) {
 	if tx.Error != nil {
 		t.Fatal("Create item failed:", tx.Error)
 	}
-	// 测试此时三个表分别只有 1 条数据
+	// 测试此时两个表分别只有 1 条数据
 	var tagCount int64
 	database.DB.Model(&database.Tag{}).Count(&tagCount)
 	var itemCount int64
 	database.DB.Model(&database.Item{}).Count(&itemCount)
-	var itemTagsCount int64
-	database.DB.Raw("SELECT COUNT(*) FROM item_tags").Scan(&itemTagsCount)
 	assert.Equal(t, int64(1), tagCount)
 	assert.Equal(t, int64(1), itemCount)
-	assert.Equal(t, int64(1), itemTagsCount)
 	// 构造请求
 	req, _ := http.NewRequest(
 		"DELETE",
@@ -223,11 +220,9 @@ func TestDeleteTag(t *testing.T) {
 	assert.Equal(t, 200, w.Code)
 	database.DB.Model(&database.Tag{}).Count(&tagCount)
 	database.DB.Model(&database.Item{}).Count(&itemCount)
-	database.DB.Raw("SELECT COUNT(*) FROM item_tags").Scan(&itemTagsCount)
-	// 断言删除成功，并且关联表的数据也会删除
+	// 断言删除成功
 	assert.Equal(t, int64(0), tagCount)
 	assert.Equal(t, int64(1), itemCount)
-	assert.Equal(t, int64(0), itemTagsCount)
 }
 
 func TestGetAllTag(t *testing.T) {
