@@ -16,7 +16,17 @@ import (
 type TagController struct{}
 
 func (ctrl *TagController) Get(c *gin.Context) {
-	panic("not implemented") // TODO: Implement
+	var tag database.Tag
+	// 获取 url 路径参数
+	id, _ := strconv.Atoi(c.Param("id"))
+
+	if err := database.DB.Preload("Items").First(&tag, id).Error; err != nil {
+		log.Print(err)
+		c.JSON(http.StatusUnprocessableEntity, api.Error{Error: "Tag not found"})
+		return
+	}
+
+	c.JSON(http.StatusOK, tag)
 }
 
 func (ctrl *TagController) Create(c *gin.Context) {

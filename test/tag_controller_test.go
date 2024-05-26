@@ -348,3 +348,54 @@ func TestGetTagSummaryWithMonth(t *testing.T) {
 	assert.Equal(t, "电子产品2", response.Resources[1].Name)
 	assert.Equal(t, 200, response.Resources[1].Summary)
 }
+
+func TestGetTagByID(t *testing.T) {
+	setUpTestCase(t)
+	// 注册路由
+	tc := controller.TagController{}
+	tc.RegisterRoutes(r.Group("/api"))
+	// 创建一个用户
+	user := &database.User{
+		Email: "1@qq.com",
+	}
+	database.DB.Create(user)
+	// 创建一个 tag
+	tag := &database.Tag{
+		Sign:   "⌚️",
+		Name:   "电子产品",
+		Kind:   "expenses",
+		UserID: user.ID,
+	}
+	database.DB.Create(tag)
+	// tag 下创建 5 条数据
+	for i := 0; i < 5; i++ {
+		item := &database.Item{
+			Amount:     100,
+			Kind:       "expenses",
+			HappenedAt: time.Now(),
+			UserID:     user.ID,
+			TagID:      tag.ID,
+		}
+		database.DB.Create(item)
+	}
+	// 初始化 w
+	w := httptest.NewRecorder()
+	// 发起请求
+	req, _ := http.NewRequest(
+		"GET",
+		fmt.Sprintf("/api/v1/tags/%d", tag.ID),
+		nil,
+	)
+	r.ServeHTTP(w, req)
+	// 处理响应体
+	var response database.Tag
+	if err := json.Unmarshal(w.Body.Bytes(), &response); err != nil {
+		t.Fatalf("json.Unmarshal fail %v", err)
+	}
+	assert.Equal(t, 200, w.Code)
+	assert.Equal(t, tag.ID, response.ID)
+	assert.Equal(t, tag.Sign, response.Sign)
+	assert.Equal(t, tag.Name, response.Name)
+	assert.Equal(t, 5, len(response.Items))
+	assert.Equal(t, 100, response.Items[0].Amount)
+}
