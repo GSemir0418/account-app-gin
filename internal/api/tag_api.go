@@ -18,3 +18,14 @@ type UpdateTagRequest struct {
 type GetAllTagResponse struct {
 	Resources []database.Tag `json:"resources"`
 }
+
+type TagSummary struct {
+	TagID   uint   `json:"tagId"`
+	Name    string `json:"name"`
+	Sign    string `json:"sign"`
+	Kind    string `json:"kind"`
+	Summary int    `json:"summary"`
+}
+type GetTagSummaryWithMonthResponse struct {
+	Resources []TagSummary `json:"resources"`
+}

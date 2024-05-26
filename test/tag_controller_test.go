@@ -267,3 +267,84 @@ func TestGetAllTag(t *testing.T) {
 	// 先用断言 后面会补充类型
 	assert.Equal(t, 5, len(response.Resources))
 }
+
+func TestGetTagSummaryWithMonth(t *testing.T) {
+	setUpTestCase(t)
+	// 注册路由
+	tc := controller.TagController{}
+	tc.RegisterRoutes(r.Group("/api"))
+	// 创建一个用户
+	user := &database.User{
+		Email: "1@qq.com",
+	}
+	tx := database.DB.Create(user)
+	if tx.Error != nil {
+		t.Fatal("Create user failed:", tx.Error)
+	}
+	// 创建 2 条 tag：电子产品1 和 电子产品2
+	for i := 1; i < 3; i++ {
+		tag := &database.Tag{
+			Sign:   "⌚️",
+			Name:   fmt.Sprintf("电子产品%d", i),
+			Kind:   "expenses",
+			UserID: user.ID,
+		}
+		database.DB.Create(tag)
+	}
+	// 分别给每个 tag 创建 2 条 item
+	// 每个 tag 下的两条 item 时间不同
+	item1 := &database.Item{
+		Amount:     100,
+		Kind:       "expenses",
+		HappenedAt: time.Now().Add(time.Hour * 24 * 30),
+		UserID:     user.ID,
+		TagID:      1,
+	}
+	item2 := &database.Item{
+		Amount:     100,
+		Kind:       "expenses",
+		HappenedAt: time.Now(),
+		UserID:     user.ID,
+		TagID:      1,
+	}
+	item3 := &database.Item{
+		Amount:     200,
+		Kind:       "expenses",
+		HappenedAt: time.Now().Add(time.Hour * 24 * 30),
+		UserID:     user.ID,
+		TagID:      2,
+	}
+	item4 := &database.Item{
+		Amount:     200,
+		Kind:       "expenses",
+		HappenedAt: time.Now(),
+		UserID:     user.ID,
+		TagID:      2,
+	}
+	items := []*database.Item{item1, item2, item3, item4}
+	database.DB.Create(items)
+	// 初始化 w
+	w := httptest.NewRecorder()
+	// 初始化当前月份
+	month := time.Now().Format("2006-01")
+	// 发起请求
+	req, _ := http.NewRequest(
+		"GET",
+		fmt.Sprintf("/api/v1/tags/summary?month=%s", month),
+		nil,
+	)
+	r.ServeHTTP(w, req)
+	// 解析响应
+	var response api.GetTagSummaryWithMonthResponse
+	if err := json.Unmarshal(w.Body.Bytes(), &response); err != nil {
+		t.Fatalf("json.Unmarshal fail %v", err)
+	}
+	assert.Equal(t, 200, w.Code)
+	// 断言
+	// { resources: [ {id, name, sign, summary, kind}]}
+	assert.Equal(t, 2, len(response.Resources))
+	assert.Equal(t, "电子产品1", response.Resources[0].Name)
+	assert.Equal(t, 100, response.Resources[0].Summary)
+	assert.Equal(t, "电子产品2", response.Resources[1].Name)
+	assert.Equal(t, 200, response.Resources[1].Summary)
+}

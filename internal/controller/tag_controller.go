@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
@@ -185,7 +186,46 @@ func (ctrl *TagController) GetPaged(c *gin.Context) {
 }
 
 func (ctrl *TagController) GetSummary(c *gin.Context) {
-	panic("not implemented") // TODO: Implement
+	month := c.DefaultQuery("month", time.Now().Format("2006-01"))
+	// 根据用户输入的月份，获得该月份的第一天和最后一天
+	firstDayOfMonth, _ := time.Parse("2006-01", month)
+	lastDayOfMonth := firstDayOfMonth.AddDate(0, 1, -1)
+
+	var TagSummaries []api.TagSummary
+	// 	SELECT
+	//     tags.id AS tag_id,
+	//     tags.name,
+	//     tags.sign,
+	//     tags.kind,
+	//     COALESCE(SUM(items.amount), 0) AS summary
+	// FROM
+	//     tags
+	// LEFT JOIN items ON tags.id = items.tag_id
+	//     AND items.happened_at >= 'firstDayOfMonth'
+	//     AND items.happened_at <= 'lastDayOfMonth'
+	// GROUP BY
+	//     tags.id, tags.name, tags.sign, tags.kind;
+	if err := database.DB.Table("tags").
+		// tags.id as tag_id 选择tags表的id字段，并给这个字段的返回值起了一个别名tag_id。
+		// tags.name，tags.sign，和tags.kind 直接选择了这些字段。
+		// COALESCE(SUM(items.amount), 0) as summary 计算了所有相关items的amount字段之和，如果没有任何项与给定的tag相关联，则返回0。
+		Select("tags.id as tag_id, tags.name, tags.sign, tags.kind, COALESCE(SUM(items.amount), 0) as summary").
+		// 在tags和items表之间进行左外连接。条件是tags.id字段必须与items.tag_id字段匹配，并且items表中的happened_at字段必须在firstDayOfMonth和lastDayOfMonth参数指定的范围内。
+		Joins("LEFT JOIN items ON tags.id = items.tag_id AND items.happened_at >= ? AND items.happened_at <= ?", firstDayOfMonth, lastDayOfMonth).
+		// 指定了用来分组的字段，这是为了计算每个不同标签的items.amount之和。
+		Group("tags.id, tags.name, tags.sign, tags.kind").
+		// 执行查询并将结果填充到TagSummaries变量中。
+		Scan(&TagSummaries).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, api.Error{Error: "Failed to get tag summary"})
+		log.Print(err.Error())
+		return
+	}
+	// 将结果编码为JSON格式并写入响应体
+	response := api.GetTagSummaryWithMonthResponse{
+		Resources: TagSummaries,
+	}
+	// Send the response
+	c.JSON(http.StatusOK, response)
 }
 
 func (ctrl *TagController) GetAll(c *gin.Context) {
@@ -210,4 +250,6 @@ func (ctrl *TagController) RegisterRoutes(rg *gin.RouterGroup) {
 	v1.DELETE("/tags/:id", ctrl.Destory)
 	v1.GET("/tags", ctrl.GetAll)
 	v1.GET("/tags/:id", ctrl.Get)
+	// GET /tags/summary?month=YYYY-MM
+	v1.GET("/tags/summary", ctrl.GetSummary)
 }
