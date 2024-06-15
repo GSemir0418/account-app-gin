@@ -55,6 +55,7 @@ func (ctrl *TagController) Create(c *gin.Context) {
 	tag.UserID = user.ID
 	tag.Sign = body.Sign
 	tag.Name = body.Name
+	tag.Kind = body.Kind
 
 	if result := database.DB.Create(&tag); result.Error != nil {
 		c.JSON(http.StatusInternalServerError, api.Error{Error: "Could not create tag"})

@@ -241,3 +241,19 @@ TDD tag crud
 db.Exec
 db.Raw.Scan
 
+新项目
+安装 golang 1.21.0
+vscode 插件 aldijav.golangwithdidi
+配置代理
+go env -w GOPROXY=https://goproxy.cn,direct
+安装依赖 
+go mod tidy
+同步环境变量
+DB_DSN=user:pass@tcp(127.0.0.1:3306)/dbname?charset=utf8mb4&parseTime=True&loc=Local
+同步数据库
+CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build main.go;./main.exe db migrate:create
+启动项目
+go run main.go server
+
+windows mysql 启动与停止
+win+r services.msc

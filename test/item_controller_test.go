@@ -34,7 +34,7 @@ func TestItemCreate(t *testing.T) {
 		UserID: user.ID,
 		Sign:   "⌚️",
 		Name:   "电子产品",
-		Kind:   "expenses",
+		Kind:   "expense",
 	}
 	tx = database.DB.Create(tag)
 	if tx.Error != nil {
@@ -93,7 +93,7 @@ func TestItemPaged(t *testing.T) {
 		UserID: user.ID,
 		Sign:   "⌚️",
 		Name:   "电子产品",
-		Kind:   "expenses",
+		Kind:   "expense",
 	}
 	tx = database.DB.Create(tag)
 	if tx.Error != nil {
@@ -105,7 +105,7 @@ func TestItemPaged(t *testing.T) {
 		item := &database.Item{
 			UserID:     user.ID,
 			Amount:     10000,
-			Kind:       "expenses",
+			Kind:       "expense",
 			TagID:      tag.ID,
 			HappenedAt: time.Now(),
 		}

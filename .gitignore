@@ -2,3 +2,4 @@
 account-app-gin
 coverage
 .vscode
+*.exe

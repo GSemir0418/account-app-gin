@@ -35,7 +35,7 @@ func TestTagCreate(t *testing.T) {
 		UserID: user.ID,
 		Sign:   "⌚️",
 		Name:   "电子产品",
-		Kind:   "expenses",
+		Kind:   "expense",
 	}
 	bodyJson, _ := json.Marshal(body)
 	req, _ := http.NewRequest(
@@ -51,6 +51,7 @@ func TestTagCreate(t *testing.T) {
 	err := json.Unmarshal(w.Body.Bytes(), &response)
 	assert.Nil(t, err)
 	assert.Equal(t, response["userId"], float64(user.ID))
+	assert.Equal(t, response["kind"], body.Kind)
 }
 
 func TestTagUpdate(t *testing.T) {
@@ -72,7 +73,7 @@ func TestTagUpdate(t *testing.T) {
 		UserID: user.ID,
 		Sign:   "⌚️",
 		Name:   "电子产品",
-		Kind:   "expenses",
+		Kind:   "expense",
 	}
 	tx := database.DB.Create(tag)
 	if tx.Error != nil {
@@ -185,7 +186,7 @@ func TestDeleteTag(t *testing.T) {
 		UserID: user.ID,
 		Sign:   "⌚️",
 		Name:   "电子产品",
-		Kind:   "expenses",
+		Kind:   "expense",
 	}
 	tx = database.DB.Create(tag)
 	if tx.Error != nil {
@@ -243,7 +244,7 @@ func TestGetAllTag(t *testing.T) {
 		tag := &database.Tag{
 			Sign:   "⌚️",
 			Name:   fmt.Sprintf("电子产品%d", i),
-			Kind:   "expenses",
+			Kind:   "expense",
 			UserID: user.ID,
 		}
 		database.DB.Create(tag)
@@ -286,7 +287,7 @@ func TestGetTagSummaryWithMonth(t *testing.T) {
 		tag := &database.Tag{
 			Sign:   "⌚️",
 			Name:   fmt.Sprintf("电子产品%d", i),
-			Kind:   "expenses",
+			Kind:   "expense",
 			UserID: user.ID,
 		}
 		database.DB.Create(tag)
@@ -295,28 +296,28 @@ func TestGetTagSummaryWithMonth(t *testing.T) {
 	// 每个 tag 下的两条 item 时间不同
 	item1 := &database.Item{
 		Amount:     100,
-		Kind:       "expenses",
+		Kind:       "expense",
 		HappenedAt: time.Now().Add(time.Hour * 24 * 30),
 		UserID:     user.ID,
 		TagID:      1,
 	}
 	item2 := &database.Item{
 		Amount:     100,
-		Kind:       "expenses",
+		Kind:       "expense",
 		HappenedAt: time.Now(),
 		UserID:     user.ID,
 		TagID:      1,
 	}
 	item3 := &database.Item{
 		Amount:     200,
-		Kind:       "expenses",
+		Kind:       "expense",
 		HappenedAt: time.Now().Add(time.Hour * 24 * 30),
 		UserID:     user.ID,
 		TagID:      2,
 	}
 	item4 := &database.Item{
 		Amount:     200,
-		Kind:       "expenses",
+		Kind:       "expense",
 		HappenedAt: time.Now(),
 		UserID:     user.ID,
 		TagID:      2,
@@ -363,7 +364,7 @@ func TestGetTagByID(t *testing.T) {
 	tag := &database.Tag{
 		Sign:   "⌚️",
 		Name:   "电子产品",
-		Kind:   "expenses",
+		Kind:   "expense",
 		UserID: user.ID,
 	}
 	database.DB.Create(tag)
@@ -371,7 +372,7 @@ func TestGetTagByID(t *testing.T) {
 	for i := 0; i < 5; i++ {
 		item := &database.Item{
 			Amount:     100,
-			Kind:       "expenses",
+			Kind:       "expense",
 			HappenedAt: time.Now(),
 			UserID:     user.ID,
 			TagID:      tag.ID,
