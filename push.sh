@@ -7,6 +7,8 @@ if [ -z "$VERSION" ]; then
     exit 1
 fi
 
-docker build -t account-app-backend:$VERSION .
-docker tag account-app-backend:$VERSION gsemir/account-app-backend:$VERSION
-docker push gsemir/account-app-backend:$VERSION
+# docker build -t account-app-backend:$VERSION .
+# docker tag account-app-backend:$VERSION gsemir/account-app-backend:$VERSION
+# docker push gsemir/account-app-backend:$VERSION
+docker buildx create --name mybuilder --use
+docker buildx build --platform linux/amd64,linux/arm64 -t gsemir/account-app-backend:$VERSION . --push
