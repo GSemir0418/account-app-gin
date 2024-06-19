@@ -52,3 +52,23 @@ func (ctrl *ValidationCodeController) RegisterRoutes(rg *gin.RouterGroup) {
 	v1 := rg.Group("/v1")
 	v1.POST("/validation-codes", ctrl.Create)
 }
+
+func (ctrl *ValidationCodeController) Get(c *gin.Context) {
+	panic("not implemented") // TODO: Implement
+}
+
+func (ctrl *ValidationCodeController) Update(c *gin.Context) {
+	panic("not implemented") // TODO: Implement
+}
+
+func (ctrl *ValidationCodeController) GetPaged(c *gin.Context) {
+	panic("not implemented") // TODO: Implement
+}
+
+func (ctrl *ValidationCodeController) Find(c *gin.Context) {
+	panic("not implemented") // TODO: Implement
+}
+
+func (ctrl *ValidationCodeController) Destory(c *gin.Context) {
+	panic("not implemented") // TODO: Implement
+}

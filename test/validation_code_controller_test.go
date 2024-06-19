@@ -15,8 +15,8 @@ import (
 func TestVCCreate(t *testing.T) {
 	setUpTestCase(t)
 
-	tc := controller.ValidationCodeController{}
-	tc.RegisterRoutes(r.Group("/api"))
+	vc := controller.ValidationCodeController{}
+	vc.RegisterRoutes(r.Group("/api"))
 
 	w := httptest.NewRecorder()
 	body := &api.CreateValidationCodeRequest{
