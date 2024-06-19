@@ -3,6 +3,7 @@ package controller
 import (
 	"account-app-gin/internal/api"
 	"account-app-gin/internal/database"
+	"account-app-gin/internal/email"
 	"fmt"
 	"log"
 	"math/rand"
@@ -38,6 +39,12 @@ func (ctrl *ValidationCodeController) Create(c *gin.Context) {
 	}
 
 	// 发送邮件
+	err := email.SendValidationCode(vc.Email, vc.Code)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, api.Error{Error: "Could not send validation code"})
+		log.Print(err.Error())
+		return
+	}
 	c.Status(http.StatusOK)
 }
 

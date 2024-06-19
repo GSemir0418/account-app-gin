@@ -20,7 +20,7 @@ func TestVCCreate(t *testing.T) {
 
 	w := httptest.NewRecorder()
 	body := &api.CreateValidationCodeRequest{
-		Email: "1",
+		Email: "845217811@qq.com",
 	}
 	bodyJson, _ := json.Marshal(body)
 	req, _ := http.NewRequest(
