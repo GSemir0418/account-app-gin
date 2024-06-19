@@ -29,6 +29,7 @@ func TestItemCreate(t *testing.T) {
 	if tx.Error != nil {
 		t.Fatal("Create user failed:", tx.Error)
 	}
+
 	// 创建一个 tag
 	tag := &database.Tag{
 		UserID: user.ID,
@@ -55,6 +56,8 @@ func TestItemCreate(t *testing.T) {
 		"/api/v1/items",
 		strings.NewReader(string(bodyJson)),
 	)
+	// 登录
+	logIn(user.ID, req)
 	// 发起请求
 	r.ServeHTTP(w, req)
 	// 处理响应体
@@ -113,7 +116,8 @@ func TestItemPaged(t *testing.T) {
 			t.Fatal(tx.Error)
 		}
 	}
-
+	// 登录
+	logIn(user.ID, req)
 	// 发起请求
 	r.ServeHTTP(w, req)
 	assert.Equal(t, 200, w.Code)

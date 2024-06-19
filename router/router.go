@@ -3,6 +3,7 @@ package router
 import (
 	"account-app-gin/internal/controller"
 
+	"account-app-gin/internal/middleware"
 	"github.com/gin-gonic/gin"
 )
 
@@ -19,6 +20,8 @@ func loadControllers() []controller.Controller {
 func New() *gin.Engine {
 	// 创建路由
 	r := gin.Default()
+	// 应用中间件
+	r.Use(middleware.Me([]string{"/api/v1/session", "/api/v1/validation-codes", "/ping"}))
 	// 注册路由
 	rg := r.Group("/api")
 	for _, ctrl := range loadControllers() {
