@@ -257,3 +257,23 @@ go run main.go server
 
 windows mysql 启动与停止
 win+r services.msc
+
+- docker 配置 proxy
+sudo vi /etc/docker/daemon.json
+```json
+{
+  "registry-mirrors": ["https://docker.xxx"]
+}
+```
+重启 docker
+sudo systemctl restart docker
+
+- 用户系统
+验证码
+	建表 同步数据库 写controller
+	
+发送邮件
+	go get gopkg.in/gomail.v2
+登录
+	session controller
+jwt
