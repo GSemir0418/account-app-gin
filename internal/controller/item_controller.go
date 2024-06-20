@@ -3,13 +3,11 @@ package controller
 import (
 	"account-app-gin/internal/api"
 	"account-app-gin/internal/database"
-	"errors"
 	"log"
 	"net/http"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
 )
 
 type ItemController struct{}
@@ -27,16 +25,16 @@ func (ctrl *ItemController) Create(c *gin.Context) {
 	}
 
 	// 检查 UserID 是否指向一个存在的 User 记录
-	var user database.User
-	if err := database.DB.First(&user, body.UserID).Error; err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "User not found"})
-			return
-		}
+	// var user database.User
+	// if err := database.DB.First(&user, body.UserID).Error; err != nil {
+	// 	if errors.Is(err, gorm.ErrRecordNotFound) {
+	// 		c.JSON(http.StatusBadRequest, gin.H{"error": "User not found"})
+	// 		return
+	// 	}
 
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
+	// 	c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	// 	return
+	// }
 
 	// 查询 tag id 是否有效
 	tagId := body.TagID
@@ -47,9 +45,11 @@ func (ctrl *ItemController) Create(c *gin.Context) {
 		log.Print(result.Error.Error())
 		return
 	}
+	// 中间件取出 user
+	user, _ := c.Get("me")
 	// 将 tags 放入 item 中
 	var item database.Item
-	item.UserID = user.ID
+	item.UserID = user.(*database.User).ID
 	item.TagID = tagId
 	item.Amount = body.Amount
 	item.HappenedAt = body.HappenedAt

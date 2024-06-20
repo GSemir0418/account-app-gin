@@ -50,10 +50,12 @@ func (ctrl *TagController) Create(c *gin.Context) {
 	// 看下中间件有没有把 user 信息注入到上下文中
 	// user, exists := c.Get("me")
 	// log.Println(user, exists)
+	// 中间件取出 user
+	user, _ := c.Get("me")
 	// 创建 tag
 	// 将 tagIds 放入 item 中
 	var tag database.Tag
-	tag.UserID = body.UserID
+	tag.UserID = user.(*database.User).ID
 	tag.Sign = body.Sign
 	tag.Name = body.Name
 	tag.Kind = body.Kind

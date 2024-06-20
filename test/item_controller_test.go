@@ -46,7 +46,6 @@ func TestItemCreate(t *testing.T) {
 	body := &api.CreateItemRequest{
 		Amount:     1000000,
 		TagID:      tag.ID,
-		UserID:     user.ID,
 		Kind:       "in_come",
 		HappenedAt: time.Now(),
 	}

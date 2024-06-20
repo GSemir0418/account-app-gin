@@ -32,10 +32,9 @@ func TestTagCreate(t *testing.T) {
 	}
 	// 创建一个 tag
 	body := &api.CreateTagRequest{
-		UserID: user.ID,
-		Sign:   "⌚️",
-		Name:   "电子产品",
-		Kind:   "expense",
+		Sign: "⌚️",
+		Name: "电子产品",
+		Kind: "expense",
 	}
 	bodyJson, _ := json.Marshal(body)
 	req, _ := http.NewRequest(
