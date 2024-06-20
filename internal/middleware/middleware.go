@@ -5,6 +5,7 @@ import (
 	jwt_helper "account-app-gin/internal/jwt"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
@@ -33,33 +34,42 @@ func Me(whiteList []string) gin.HandlerFunc {
 	}
 }
 
-func getMe(c *gin.Context) (database.User, error) {
+func getMe(c *gin.Context) (*database.User, error) {
 	var user database.User
 
 	auth := c.GetHeader("Authorization")
 	if len(auth) < 8 {
-		return user, fmt.Errorf("JWT is required")
+		return nil, fmt.Errorf("JWT is required")
 	}
 	// 截取 Bearer 后的字符
 	jwtString := auth[7:]
 	t, err := jwt_helper.ParseJWT(jwtString)
 	if err != nil {
-		return user, fmt.Errorf("invalid jwt")
+		return nil, fmt.Errorf("invalid jwt")
 	}
 
 	claims, ok := t.Claims.(jwt.MapClaims)
 	if !ok {
-		return user, fmt.Errorf("invalid jwt")
+		return nil, fmt.Errorf("invalid jwt")
 	}
 
 	userID, ok := claims["user_id"].(float64)
 	if !ok {
-		return user, fmt.Errorf("invalid jwt")
+		return nil, fmt.Errorf("invalid jwt")
+	}
+
+	// 超时校验
+	exp, ok := claims["exp"].(float64)
+	if !ok {
+		return nil, fmt.Errorf("invalid jwt")
+	}
+	if float64(time.Now().Unix()) > exp {
+		return nil, fmt.Errorf("invalid jwt")
 	}
 
 	if tx := database.DB.Find(&user, userID); tx.Error != nil {
-		return user, fmt.Errorf("无效的jwt")
+		return nil, fmt.Errorf("invalid jwt")
 	}
 
-	return user, nil
+	return &user, nil
 }

@@ -3,6 +3,7 @@ package jwt_helper
 import (
 	"log"
 	"os"
+	"time"
 
 	"github.com/golang-jwt/jwt/v5"
 )
@@ -16,9 +17,10 @@ func getHmacSecret() []byte {
 	return []byte(secret)
 }
 
-func GenerateJWT(user_id int) (string, error) {
+func GenerateJWT(user_id uint) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"user_id": user_id,
+		"exp":     time.Now().Add(time.Hour * 24 * 7).Unix(),
 	})
 	secret := getHmacSecret()
 

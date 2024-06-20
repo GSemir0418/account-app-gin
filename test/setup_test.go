@@ -40,7 +40,7 @@ func strPtr(s string) *string {
 }
 
 func logIn(userID uint, req *http.Request) {
-	jwtString, _ := jwt_helper.GenerateJWT(int(userID))
+	jwtString, _ := jwt_helper.GenerateJWT(uint(userID))
 	req.Header = http.Header{
 		"Authorization": []string{"Bearer " + jwtString},
 	}

@@ -47,7 +47,7 @@ func (ctrl *SessionController) Create(c *gin.Context) {
 		return
 	}
 	// 返回 jwt
-	jwt, err := jwt_helper.GenerateJWT(int(user.ID))
+	jwt, err := jwt_helper.GenerateJWT(uint(user.ID))
 	if err != nil {
 		log.Print("Generate JWT Error", err)
 		c.JSON(http.StatusInternalServerError, api.Error{Error: "Failed to generate jwt"})

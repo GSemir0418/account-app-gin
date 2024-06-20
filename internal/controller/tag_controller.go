@@ -3,14 +3,12 @@ package controller
 import (
 	"account-app-gin/internal/api"
 	"account-app-gin/internal/database"
-	"errors"
 	"log"
 	"net/http"
 	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
 )
 
 type TagController struct{}
@@ -38,21 +36,24 @@ func (ctrl *TagController) Create(c *gin.Context) {
 	}
 
 	// 检查 UserID 是否指向一个存在的 User 记录 后面有登录中间件就不用了
-	var user database.User
-	if err := database.DB.First(&user, body.UserID).Error; err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "User not found"})
-			return
-		}
+	// var user database.User
+	// if err := database.DB.First(&user, body.UserID).Error; err != nil {
+	// 	if errors.Is(err, gorm.ErrRecordNotFound) {
+	// 		c.JSON(http.StatusBadRequest, gin.H{"error": "User not found"})
+	// 		return
+	// 	}
 
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
+	// 	c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	// 	return
+	// }
 
+	// 看下中间件有没有把 user 信息注入到上下文中
+	// user, exists := c.Get("me")
+	// log.Println(user, exists)
 	// 创建 tag
 	// 将 tagIds 放入 item 中
 	var tag database.Tag
-	tag.UserID = user.ID
+	tag.UserID = body.UserID
 	tag.Sign = body.Sign
 	tag.Name = body.Name
 	tag.Kind = body.Kind
