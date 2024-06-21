@@ -19,7 +19,7 @@ type GetAllTagResponse struct {
 }
 
 type TagSummary struct {
-	TagID   uint   `json:"tagId"`
+	ID      uint   `json:"id"`
 	Name    string `json:"name"`
 	Sign    string `json:"sign"`
 	Kind    string `json:"kind"`

@@ -163,40 +163,7 @@ func (ctrl *TagController) Destory(c *gin.Context) {
 	c.Status(http.StatusOK)
 }
 func (ctrl *TagController) GetPaged(c *gin.Context) {
-	// 拿到请求参数
-	// page := c.Request.URL.Query().Get("page")
-	// page := c.DefaultQuery("page", "1")
-	// pageSize := c.Request.URL.Query().Get("page_size")
-	// pageSize := c.DefaultQuery("page_size", "10")
-	// page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
-	// pageSize, _ := strconv.Atoi(c.DefaultQuery("page_size", "10"))
-	// var items []database.Item
-	// var total int64
-
-	// // 分页设置
-	// offset := (page - 1) * pageSize
-
-	// // 首先得到总数，用于分页信息
-	// if err := database.DB.Model(&database.Item{}).Count(&total).Error; err != nil {
-	// 	c.JSON(http.StatusInternalServerError, gin.H{"error": "get model total failed"})
-	// 	return
-	// }
-
-	// // 查询分页的数据
-	// if err := database.DB.Offset(offset).Limit(pageSize).Find(&items).Error; err != nil {
-	// 	c.JSON(http.StatusInternalServerError, gin.H{"error": err})
-	// 	return
-	// }
-
-	// // 响应，包括分页的数据和总数
-	// c.JSON(http.StatusOK, api.GetPagedResponse{
-	// 	Resources: items,
-	// 	Pager: api.Pager{
-	// 		Total:    total,
-	// 		Page:     int64(page),
-	// 		PageSize: int64(pageSize),
-	// 	},
-	// })
+	panic("not implemented") // TODO: Implement
 }
 
 func (ctrl *TagController) GetSummary(c *gin.Context) {
@@ -220,10 +187,10 @@ func (ctrl *TagController) GetSummary(c *gin.Context) {
 	// GROUP BY
 	//     tags.id, tags.name, tags.sign, tags.kind;
 	if err := database.DB.Table("tags").
-		// tags.id as tag_id 选择tags表的id字段，并给这个字段的返回值起了一个别名tag_id。
+		// tags.id as id 选择tags表的id字段，并给这个字段的返回值起了一个别名 id。
 		// tags.name，tags.sign，和tags.kind 直接选择了这些字段。
 		// COALESCE(SUM(items.amount), 0) as summary 计算了所有相关items的amount字段之和，如果没有任何项与给定的tag相关联，则返回0。
-		Select("tags.id as tag_id, tags.name, tags.sign, tags.kind, COALESCE(SUM(items.amount), 0) as summary").
+		Select("tags.id as id, tags.name, tags.sign, tags.kind, COALESCE(SUM(items.amount), 0) as summary").
 		// 在tags和items表之间进行左外连接。条件是tags.id字段必须与items.tag_id字段匹配，并且items表中的happened_at字段必须在firstDayOfMonth和lastDayOfMonth参数指定的范围内。
 		Joins("LEFT JOIN items ON tags.id = items.tag_id AND items.happened_at >= ? AND items.happened_at <= ?", firstDayOfMonth, lastDayOfMonth).
 		// 指定了用来分组的字段，这是为了计算每个不同标签的items.amount之和。
