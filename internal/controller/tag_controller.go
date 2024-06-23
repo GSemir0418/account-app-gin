@@ -162,6 +162,7 @@ func (ctrl *TagController) Destory(c *gin.Context) {
 
 	c.Status(http.StatusOK)
 }
+
 func (ctrl *TagController) GetPaged(c *gin.Context) {
 	panic("not implemented") // TODO: Implement
 }
