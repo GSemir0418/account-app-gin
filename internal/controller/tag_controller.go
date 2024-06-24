@@ -173,6 +173,9 @@ func (ctrl *TagController) GetSummary(c *gin.Context) {
 	firstDayOfMonth, _ := time.Parse("2006-01", month)
 	lastDayOfMonth := firstDayOfMonth.AddDate(0, 1, -1)
 
+	// 只能查到当前用户的数据
+	user, _ := c.Get("me")
+
 	var TagSummaries []api.TagSummary
 	// 	SELECT
 	//     tags.id AS tag_id,
@@ -192,6 +195,10 @@ func (ctrl *TagController) GetSummary(c *gin.Context) {
 		// tags.name，tags.sign，和tags.kind 直接选择了这些字段。
 		// COALESCE(SUM(items.amount), 0) as summary 计算了所有相关items的amount字段之和，如果没有任何项与给定的tag相关联，则返回0。
 		Select("tags.id as id, tags.name, tags.sign, tags.kind, COALESCE(SUM(items.amount), 0) as summary").
+		// 软删除
+		Where("tags.deleted_at IS NULL").
+		// 只查当前用户的
+		Where("tags.user_id = ?", user.(*database.User).ID).
 		// 在tags和items表之间进行左外连接。条件是tags.id字段必须与items.tag_id字段匹配，并且items表中的happened_at字段必须在firstDayOfMonth和lastDayOfMonth参数指定的范围内。
 		Joins("LEFT JOIN items ON tags.id = items.tag_id AND items.happened_at >= ? AND items.happened_at <= ?", firstDayOfMonth, lastDayOfMonth).
 		// 指定了用来分组的字段，这是为了计算每个不同标签的items.amount之和。
