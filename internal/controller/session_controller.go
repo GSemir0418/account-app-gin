@@ -20,25 +20,28 @@ func (ctrl *SessionController) Create(c *gin.Context) {
 		log.Print(err)
 		return
 	}
-	// 查询验证码是否有效
-	//SELECT * FROM validation_codes
-	// WHERE
-	// email=$1
-	// AND
-	// code=$2
-	// AND
-	// used_at IS NULL
-	// ORDER BY created_at desc
-	// LIMIT 1;
-	var validationCode database.ValidationCode
-	if result := database.DB.Where("email = ? AND code = ? AND used_at IS NULL", body.Email, body.Code).
-		Order("created_at desc").
-		First(&validationCode); result.Error != nil {
-		c.JSON(http.StatusNotFound, api.Error{Error: "Code not found or already used"})
-		log.Print(result.Error.Error())
-		return
-	}
+	// 非测试用户要进行验证
+	if body.Email != "test@test.com" {
 
+		// 查询验证码是否有效
+		//SELECT * FROM validation_codes
+		// WHERE
+		// email=$1
+		// AND
+		// code=$2
+		// AND
+		// used_at IS NULL
+		// ORDER BY created_at desc
+		// LIMIT 1;
+		var validationCode database.ValidationCode
+		if result := database.DB.Where("email = ? AND code = ? AND used_at IS NULL", body.Email, body.Code).
+			Order("created_at desc").
+			First(&validationCode); result.Error != nil {
+			c.JSON(http.StatusNotFound, api.Error{Error: "Code not found or already used"})
+			log.Print(result.Error.Error())
+			return
+		}
+	}
 	// 查询用户（无则创建）
 	var user database.User
 	if result := database.DB.FirstOrCreate(&user, database.User{Email: body.Email}); result.Error != nil {
@@ -46,6 +49,7 @@ func (ctrl *SessionController) Create(c *gin.Context) {
 		log.Print(result.Error.Error())
 		return
 	}
+
 	// 返回 jwt
 	jwt, err := jwt_helper.GenerateJWT(uint(user.ID))
 	if err != nil {
