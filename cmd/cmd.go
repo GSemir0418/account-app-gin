@@ -29,6 +29,12 @@ func Run() {
 			database.Migrate()
 		},
 	}
+	clearDBCmd := &cobra.Command{
+		Use: "clear",
+		Run: func(cmd *cobra.Command, args []string) {
+			database.TruncateTables([]string{"users", "items", "tags", "validation_codes"})
+		},
+	}
 	testCmd := &cobra.Command{
 		Use: "test",
 		Run: func(cmd *cobra.Command, args []string) {
@@ -43,7 +49,7 @@ func Run() {
 	database.ConnectDB()
 
 	rootCmd.AddCommand(srvCmd, dbCmd, testCmd)
-	dbCmd.AddCommand(mgrCmd)
+	dbCmd.AddCommand(mgrCmd, clearDBCmd)
 
 	rootCmd.Execute()
 }
