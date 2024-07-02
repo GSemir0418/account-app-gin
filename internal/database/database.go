@@ -48,44 +48,35 @@ func Migrate() {
 	}
 }
 
-func TruncateTablesForTest(t *testing.T, tables []string) {
+func TruncateTables(t *testing.T, tables []string) {
 	// 禁用外键检查
 	err := DB.Exec("SET FOREIGN_KEY_CHECKS=0;").Error
 	if err != nil {
-		t.Fatalf("Failed to disable foreign key checks: %v", err)
+		if t != nil {
+			t.Fatalf("Failed to disable foreign key checks: %v", err)
+		} else {
+			log.Fatalf("Failed to disable foreign key checks: %v", err)
+		}
 	}
 
 	// 清空所有给定的表
 	for _, table := range tables {
 		if err = DB.Exec("TRUNCATE TABLE " + table + ";").Error; err != nil {
-			t.Fatalf("Failed to truncate table %s: %v", table, err)
+			if t != nil {
+				t.Fatalf("Failed to truncate table %s: %v", table, err)
+			} else {
+				log.Fatalf("Failed to truncate table %s: %v", table, err)
+			}
 		}
 	}
 
 	// 重新启用外键检查
 	err = DB.Exec("SET FOREIGN_KEY_CHECKS=1;").Error
 	if err != nil {
-		t.Fatalf("Failed to enable foreign key checks: %v", err)
-	}
-}
-
-func TruncateTables(tables []string) {
-	// 禁用外键检查
-	err := DB.Exec("SET FOREIGN_KEY_CHECKS=0;").Error
-	if err != nil {
-		log.Fatalf("Failed to disable foreign key checks: %v", err)
-	}
-
-	// 清空所有给定的表
-	for _, table := range tables {
-		if err = DB.Exec("TRUNCATE TABLE " + table + ";").Error; err != nil {
-			log.Fatalf("Failed to truncate table %s: %v", table, err)
+		if t != nil {
+			t.Fatalf("Failed to enable foreign key checks: %v", err)
+		} else {
+			log.Fatalf("Failed to enable foreign key checks: %v", err)
 		}
-	}
-
-	// 重新启用外键检查
-	err = DB.Exec("SET FOREIGN_KEY_CHECKS=1;").Error
-	if err != nil {
-		log.Fatalf("Failed to enable foreign key checks: %v", err)
 	}
 }

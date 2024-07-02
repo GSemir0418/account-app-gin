@@ -32,7 +32,7 @@ func Run() {
 	clearDBCmd := &cobra.Command{
 		Use: "clear",
 		Run: func(cmd *cobra.Command, args []string) {
-			database.TruncateTables([]string{"users", "items", "tags", "validation_codes"})
+			database.TruncateTables(nil, []string{"users", "items", "tags", "validation_codes"})
 		},
 	}
 	testCmd := &cobra.Command{
